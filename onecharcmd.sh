@@ -34,7 +34,12 @@ function t() {
 	fi
 	__tmux_ls=$(tmux ls)
 	if [ $? -ne 0 ]; then
-		tmux
+		echo "There is no session, input a name to create a session!"
+		read __session_name
+		if [ -z $__session_name ]; then
+			__session_name="default"
+		fi
+		tmux new -s $__session_name
 		return $?
 	fi
 	__tmux_ls=$(tmux ls | awk -F ':' '{print $1}' | nl)
@@ -49,7 +54,7 @@ function t() {
 	if [[ -z $__number ]]; then
 		__number=1
 	fi
-	tmux attach $(echo __tmux_ls | grep "^$__number	" | awk -F '	' '{print $2}')
+	tmux attach -t $(echo "$__tmux_ls" | grep "^\s*$__number\s" | awk -F '	' '{print $2}')
 	return $?
 }
 function v() {
