@@ -146,3 +146,25 @@ function b() {
 	\builtin cd "$__path_to_cd"
 	return $?
 }
+function g() {
+	if [ -z $(which lazygit) ]; then
+		echo "lazygit not installed!"
+		return 1
+	fi
+	if [ -z $1 ]; then
+		lazygit
+		return $?
+	fi
+	if [ -d "$1" ]; then
+		lazygit -p "$1"
+		return $?
+	fi
+	if [ ! -z $(which zoxide) ]; then
+		__path_to_git=$(zoxide query "$1")
+		if [ $? -eq 0 ]; then
+			lazygit -p "$__path_to_git"
+			return $?
+		fi
+	fi
+	return 1
+}
