@@ -16,9 +16,9 @@ if [[ ! -z $__matlab_path ]]; then
 fi
 function cd() {
 	if [[ -z $(command -v z) ]]; then
-		\builtin cd $1
+		\builtin cd $*
 		return $?
 	fi
-	z $1
+	z $*
 	return $?
 }
