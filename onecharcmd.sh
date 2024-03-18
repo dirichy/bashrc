@@ -33,7 +33,7 @@ function t() {
 		return 1
 	fi
 	__tmux_ls=$(tmux ls)
-	if [ $? -ne 0 ]; then
+	if [[ $? -ne 0 || -z $__tmux_ls ]]; then
 		echo "There is no session, input a name to create a session!"
 		read __session_name
 		if [ -z $__session_name ]; then
@@ -62,40 +62,42 @@ function v() {
 		echo "Neovim not installed!"
 		return 1
 	fi
-	if [[ -z "$1" ]]; then
-		nvim
-		return 0
-	fi
-	if test -f "$1"; then
-		nvim $1
-		return 0
-	fi
-	if test -d "$1"; then
-		if [[ ! -z $(which zoxide) ]]; then
-			zoxide add $1
-		fi
-		nvim $1
-		return 0
-	fi
-	if [[ ! -z $(which zoxide) ]]; then
-		for knownpath in $(zoxide query -l); do
-			if test -f $knownpath/$1; then
-				if [[ $(file $knownpath/$1) =~ "text" ]]; then
-					zoxide add $knownpath
-					nvim $knownpath/$1
-					return 0
-				fi
-			fi
-		done
-	fi
-	if test -f $HOME/$1; then
-		if [[ $(file $HOME/$1) =~ "text" ]]; then
-			nvim $HOME/$1
+	if [ -z "$2" ]; then
+		if [[ -z "$1" ]]; then
+			nvim
 			return 0
 		fi
+		if test -f "$1"; then
+			nvim $1
+			return 0
+		fi
+		if test -d "$1"; then
+			if [[ ! -z $(which zoxide) ]]; then
+				zoxide add $1
+			fi
+			nvim $1
+			return 0
+		fi
+		if [[ ! -z $(which zoxide) ]]; then
+			for knownpath in $(zoxide query -l); do
+				if test -f $knownpath/$1; then
+					if [[ $(file $knownpath/$1) =~ "text" ]]; then
+						zoxide add $knownpath
+						nvim $knownpath/$1
+						return 0
+					fi
+				fi
+			done
+		fi
+		if test -f $HOME/$1; then
+			if [[ $(file $HOME/$1) =~ "text" ]]; then
+				nvim $HOME/$1
+				return 0
+			fi
+		fi
 	fi
 	if [[ ! -z $(which zoxide) ]]; then
-		filepath=$(zoxide query $1)
+		filepath=$(zoxide query $*)
 		if [[ $? == 0 ]]; then
 			zoxide add $filepath
 			nvim $filepath
@@ -103,9 +105,9 @@ function v() {
 		fi
 	fi
 	if [[ ! -z $(which fzf) ]]; then
-		filename=$(fzf -f $1)
+		filename=$(fzf -f $*)
 		if [[ -n $filename ]]; then
-			filename=$(fzf -q $1)
+			filename=$(fzf -q $*)
 			if [[ -n $filename ]]; then
 				if test -f $filename; then
 					zoxide add $(dirname $filename)
@@ -125,6 +127,7 @@ function u() {
 		case $1 in
 		*.tar.bz2) tar xjf $1 ;;
 		*.tar.gz) tar xzf $1 ;;
+		*.tar.xz) tar xf $1 ;;
 		*.bz2) bunzip2 $1 ;;
 		*.rar) rar x $1 ;;
 		*.gz) gunzip $1 ;;
@@ -156,16 +159,18 @@ function g() {
 		echo "lazygit not installed!"
 		return 1
 	fi
-	if [ -z $1 ]; then
-		lazygit
-		return $?
-	fi
-	if [ -d "$1" ]; then
-		lazygit -p "$1"
-		return $?
+	if [ -z $2 ]; then
+		if [ -z $1 ]; then
+			lazygit
+			return $?
+		fi
+		if [ -d "$1" ]; then
+			lazygit -p "$1"
+			return $?
+		fi
 	fi
 	if [ ! -z $(which zoxide) ]; then
-		__path_to_git=$(zoxide query "$1")
+		__path_to_git=$(zoxide query $*)
 		if [ $? -eq 0 ]; then
 			lazygit -p "$__path_to_git"
 			return $?
