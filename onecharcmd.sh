@@ -74,8 +74,9 @@ function v() {
 		if test -d "$1"; then
 			if [[ ! -z $(which zoxide) ]]; then
 				zoxide add $1
+				\builtin cd $1
 			fi
-			nvim $1
+			nvim .
 			return 0
 		fi
 		if [[ ! -z $(which zoxide) ]]; then
@@ -100,7 +101,8 @@ function v() {
 		filepath=$(zoxide query $*)
 		if [[ $? == 0 ]]; then
 			zoxide add $filepath
-			nvim $filepath
+			\builtin cd $filepath
+			nvim .
 			return 0
 		fi
 	fi
@@ -136,10 +138,25 @@ function u() {
 		*.tgz) tar xzf $1 ;;
 		*.zip) unzip $1 ;;
 		*.Z) uncompress $1 ;;
+    *.7z) 7z x $1 ;;
 		*) echo "'$1' cannot be extracted via extract()" ;;
 		esac
 	else
 		echo "'$1' is not a valid file"
+	fi
+}
+function o() {
+	if [ -f $1 ]; then
+		case $1 in
+		*.pdf) zathura $1 ;;
+		*.tex) nvim $1 ;;
+		*.txt) nvim $1 ;;
+		*) open $1 ;;
+		esac
+	elif [ -d $1 ]; then
+		yazi $1
+	else
+		echo "unknown file or dictionary"
 	fi
 }
 function b() {

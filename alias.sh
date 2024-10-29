@@ -22,3 +22,14 @@ function cd() {
 	z $*
 	return $?
 }
+#TODO:finish this function
+function cleanbypy() {
+	bypyfiles=$(bypy ls temp "\$f \$m" | sed '1d' | awk '{print $1,$2}')
+	nowtime=$(date +%s)
+	for bypyfile in "$bypyfiles"; do
+		set $bypyfile
+		filetime=$(echo $2 | sed 's/[,-]//g')
+		filetime=$(date -d $filetime +%s)
+		echo $filetime
+	done
+}
